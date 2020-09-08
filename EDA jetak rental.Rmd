@@ -1,0 +1,346 @@
+
+
+```{r cars}
+rm(list=ls(all=TRUE))
+train<-read.csv("train.csv",sep = ',')
+train_label<-train$count
+train<-train[,c(2:9,12)]
+test<-read.csv("test.csv",sep = ',')
+test<-test[,c(2:9)]
+anyNA(train)
+anyNA(test)
+
+##Checking Data Characteristics
+dim(train)
+dim(test)
+str(train)
+str(test)
+head(train)
+head(test)
+names(train)
+names(test)
+summary(train)
+summary(test)
+
+##Exploratory data analysis
+
+# Plot histogram of x
+library(ggplot2)
+library(moments) 
+
+###Univariate analysis
+##Season
+ggplot(train, aes(x=season)) + 
+  geom_histogram(color="red", fill="red")+
+  labs(title = "Season Train frequency",x="Season",y="Frequency")
+ggplot(test, aes(x=season)) + 
+  geom_histogram(color="blue", fill="blue")+
+  labs(title = "Season Test frequency",x="Season",y="Frequency")
+##Holiday
+ggplot(train, aes(x=holiday)) + 
+  geom_histogram(color="red", fill="red")+
+  labs(title = "Holday Train frequency",x="Holiday",y="Frequency")
+ggplot(test, aes(x=holiday)) + 
+  geom_histogram(color="blue", fill="blue")+
+  labs(title = "Holiday Test frequency",x="Holday",y="Frequency")
+##Working day
+ggplot(train, aes(x=workingday)) + 
+  geom_histogram(color="red", fill="red")+
+  labs(title = "Working day Train frequency",x="Working day",y="Frequency")
+ggplot(test, aes(x=workingday)) + 
+  geom_histogram(color="blue", fill="blue")+
+  labs(title = "workingday Test frequency",x="Working day",y="Frequency")
+##Weather
+ggplot(train, aes(x=weather)) + 
+  geom_histogram(color="red", fill="red")+
+  labs(title = "weather Train frequency",x="weather",y="Frequency")
+ggplot(test, aes(x=weather)) + 
+  geom_histogram(color="blue", fill="blue")+
+  labs(title = "weather Test frequency",x="weather",y="Frequency")
+##Temp
+ggplot(train, aes(x=temp)) + 
+  geom_histogram(color="red", fill="red")+
+  labs(title = "Temp Train frequency",x="Temp",y="Frequency")
+skewness(train$temp)
+ggplot(test, aes(x=temp)) + 
+  geom_histogram(color="blue", fill="blue")+
+  labs(title = "Temp Test frequency",x="Temp",y="Frequency")
+skewness(test$temp)
+##aTemp
+ggplot(train, aes(x=atemp)) + 
+  geom_histogram(color="red", fill="red")+
+  labs(title = "aTemp Train frequency",x="aTemp",y="Frequency")
+skewness(train$atemp)
+ggplot(test, aes(x=atemp)) + 
+  geom_histogram(color="blue", fill="blue")+
+  labs(title = "aTemp Test frequency",x="aTemp",y="Frequency")
+skewness(test$atemp)
+##humidity
+ggplot(train, aes(x=humidity)) + 
+  geom_histogram(color="red", fill="red")+
+  labs(title = "Humidity Train frequency",x="Humidity",y="Frequency")
+skewness(train$humidity)
+ggplot(test, aes(x=humidity)) + 
+  geom_histogram(color="blue", fill="blue")+
+  labs(title = "Humidity Test frequency",x="Humidity",y="Frequency")
+skewness(test$humidity)
+##Windspeed
+ggplot(train, aes(x=windspeed)) + 
+  geom_histogram(color="red", fill="red")+
+  labs(title = "windspeed Train frequency",x="windspeed",y="Frequency")
+skewness(train$windspeed)
+ggplot(test, aes(x=windspeed)) + 
+  geom_histogram(color="blue", fill="blue")+
+  labs(title = "windspeed Test frequency",x="windspeed",y="Frequency")
+skewness(test$windspeed)
+##Count
+ggplot(train, aes(x=count)) + 
+  geom_histogram(color="red", fill="red")+
+  labs(title = "Count Train frequency",x="Count",y="Frequency")
+
+##Bivariate analysis
+##Corrplot(Cont vs Cont)
+library(corrplot)
+library(chisq.posthoc.test)
+train_corr<-cor(train[,c(5:9)])
+corrplot(train_corr)
+test_corr<-cor(test[,c(5:8)])
+corrplot(test_corr)
+##Temp and aTemp
+ggplot(train,aes(temp,atemp,col="red"))+
+  geom_jitter()
+ggplot(test,aes(temp,atemp,col="blue"))+
+  geom_jitter()
+##Temp and humidity
+ggplot(train,aes(temp,humidity,col="red"))+
+  geom_jitter()
+ggplot(test,aes(temp,humidity,col="blue"))+
+  geom_jitter()
+##Temp and windspeed
+ggplot(train,aes(temp,windspeed,col="red"))+
+  geom_jitter()
+ggplot(test,aes(temp,windspeed,col="blue"))+
+  geom_jitter()
+##Temp and count
+ggplot(train,aes(temp,count,col="red"))+
+  geom_jitter()
+
+##aTemp and humidity
+ggplot(train,aes(atemp,humidity,col="red"))+
+  geom_jitter()
+ggplot(test,aes(atemp,humidity,col="blue"))+
+  geom_jitter()
+##atemp and windspeed
+ggplot(train,aes(atemp,windspeed,col="red"))+
+  geom_jitter()
+ggplot(test,aes(atemp,windspeed,col="blue"))+
+  geom_jitter()
+##atemp and count
+ggplot(train,aes(atemp,count,col="red"))+
+  geom_jitter()
+
+##Humidity and windspeed
+ggplot(train,aes(humidity,windspeed,col="red"))+
+  geom_jitter()
+ggplot(test,aes(humidity,windspeed,col="blue"))+
+  geom_jitter()
+##Humidity and count
+ggplot(train,aes(humidity,count,col="red"))+
+  geom_jitter()
+
+##Windspeed and count
+ggplot(train,aes(windspeed,count,col="red"))+
+  geom_jitter()
+
+##Chisq test(Discrete vs Cont)
+##Season && Holiday
+ggplot(train, aes(factor(season), ..count..)) + geom_bar(aes(fill = factor(holiday)), position = "dodge")
+chisq.test(train$season, train$holiday, correct=FALSE)
+ggplot(train, aes(factor(season), ..count..)) + geom_bar(aes(fill = factor(holiday)), position = "dodge")
+chisq.test(test$season, test$holiday, correct=FALSE)
+chisq.posthoc.test(table(train$season,train$holiday), method = "bonferroni", round = 6)
+chisq.posthoc.test(table(test$season,test$holiday), method = "bonferroni", round = 6)
+
+##Season && Workingday
+chisq.test(train$season, train$workingday, correct=FALSE)
+ggplot(train, aes(factor(season), ..count..)) + geom_bar(aes(fill = factor(workingday)), position = "dodge")
+chisq.test(test$season, test$workingday, correct=FALSE)
+chisq.posthoc.test(table(train$season,train$workingday), method = "bonferroni", round = 6)
+ggplot(test, aes(factor(season), ..count..)) + geom_bar(aes(fill = factor(workingday)), position = "dodge")
+chisq.posthoc.test(table(test$season,test$workingday), method = "bonferroni", round = 6)
+
+##Season && Weather
+ggplot(train, aes(factor(season), ..count..)) + geom_bar(aes(fill = factor(weather)), position = "dodge")
+chisq.test(train$season, train$weather, correct=FALSE)
+ggplot(test, aes(factor(season), ..count..)) + geom_bar(aes(fill = factor(weather)), position = "dodge")
+chisq.test(test$season, test$weather, correct=FALSE)
+chisq.posthoc.test(table(train$season,train$weather), method = "bonferroni", round = 6)
+chisq.posthoc.test(table(test$season,test$weather), method = "bonferroni", round = 6)
+
+##Holiday && working holiday
+ggplot(train, aes(factor(holiday), ..count..)) + geom_bar(aes(fill = factor(workingday)), position = "dodge")
+chisq.test(train$holiday, train$workingday, correct=FALSE)
+ggplot(test, aes(factor(holiday), ..count..)) + geom_bar(aes(fill = factor(workingday)), position = "dodge")
+chisq.test(test$holiday, test$workingday, correct=FALSE)
+chisq.posthoc.test(table(train$holiday,train$workingday), method = "bonferroni", round = 6)
+chisq.posthoc.test(table(test$holiday,test$workingday), method = "bonferroni", round = 6)
+##Holiday && Weather
+ggplot(train, aes(factor(holiday), ..count..)) + geom_bar(aes(fill = factor(weather)), position = "dodge")
+chisq.test(train$holiday, train$weather, correct=FALSE)
+ggplot(test, aes(factor(holiday), ..count..)) + geom_bar(aes(fill = factor(weather)), position = "dodge")
+chisq.test(test$holiday, test$weather, correct=FALSE)
+chisq.posthoc.test(table(train$holiday,train$weather), method = "bonferroni", round = 6)
+chisq.posthoc.test(table(test$holiday,test$weather), method = "bonferroni", round = 6)
+
+##Working day and weather
+ggplot(train, aes(factor(workingday), ..count..)) + geom_bar(aes(fill = factor(weather)), position = "dodge")
+chisq.test(train$workingday, train$weather, correct=FALSE)
+ggplot(test, aes(factor(workingday), ..count..)) + geom_bar(aes(fill = factor(weather)), position = "dodge")
+chisq.test(test$workingday, test$weather, correct=FALSE)
+chisq.posthoc.test(table(train$workingday,train$weather), method = "bonferroni", round = 6)
+chisq.posthoc.test(table(test$workingday,test$weather), method = "bonferroni", round = 6)
+
+##one-way anova test
+##Season && Temp
+ggplot(train, aes(season,temp,colour=season)) +  geom_bar(stat = "identity")
+aov_s1<-aov(season~as.factor(temp),data = train)
+#TukeyHSD(aov_s1,conf.level = 0.95)
+summary(aov_s1)
+ggplot(train, aes(season,temp,colour=season)) +  geom_bar(stat = "identity")
+aov_s2<-aov(season~as.factor(temp),data = test)
+#TukeyHSD(aov_s2,conf.level = 0.95)
+summary(aov_s2)
+##Season and aTemp
+ggplot(train, aes(season,atemp,colour=season)) +  geom_bar(stat = "identity")
+aov_s3<-aov(season~as.factor(atemp),data = train)
+#TukeyHSD(aov_s3,conf.level = 0.95)
+summary(aov_s3)
+ggplot(test, aes(season,atemp,colour=season)) +  geom_bar(stat = "identity")
+aov_s4<-aov(season~as.factor(atemp),data = test)
+#TukeyHSD(aov_s4,conf.level = 0.95)
+summary(aov_s4)
+##Season and humidity
+ggplot(train, aes(season,humidity,colour=season)) +  geom_bar(stat = "identity")
+aov_s5<-aov(season~as.factor(humidity),data = train)
+#TukeyHSD(aov_s5,conf.level = 0.95)
+summary(aov_s5)
+ggplot(test, aes(season,humidity,colour=season)) +  geom_bar(stat = "identity")
+aov_s6<-aov(season~as.factor(humidity),data = test)
+#TukeyHSD(aov_s6,conf.level = 0.95)
+summary(aov_s6)
+##Season and windspeed
+ggplot(train, aes(season,windspeed,colour=season)) +  geom_bar(stat = "identity")
+aov_s7<-aov(season~as.factor(windspeed),data = train)
+#TukeyHSD(aov_s7,conf.level = 0.95)
+summary(aov_s7)
+ggplot(test, aes(season,windspeed,colour=season)) +  geom_bar(stat = "identity")
+aov_s8<-aov(season~as.factor(windspeed),data = test)
+#TukeyHSD(aov_s8,conf.level = 0.95)
+summary(aov_s8)
+## Season and count
+ggplot(train, aes(season,count,colour=season)) +  geom_bar(stat = "identity")
+aov_s9<-aov(season~as.factor(count),data = train)
+#TukeyHSD(aov_s9,conf.level = 0.95)
+summary(aov_s9)
+
+##Holiday and temp
+ggplot(train, aes(holiday,temp,colour=holiday)) +  geom_bar(stat = "identity")
+aov_h1<-aov(holiday~as.factor(temp),data = train)
+#TukeyHSD(aov_h1,conf.level = 0.95)
+summary(aov_h1)
+ggplot(test, aes(holiday,temp,colour=holiday)) +  geom_bar(stat = "identity")
+aov_h2<-aov(holiday~as.factor(temp),data = test)
+#TukeyHSD(aov_h2,conf.level = 0.95)
+summary(aov_h2)
+##Holiday and atemp
+ggplot(train, aes(holiday,atemp,colour=holiday)) +  geom_bar(stat = "identity")
+aov_h3<-aov(holiday~as.factor(atemp),data = train)
+#TukeyHSD(aov_h3,conf.level = 0.95)
+summary(aov_h3)
+ggplot(test, aes(holiday,atemp,colour=holiday)) +  geom_bar(stat = "identity")
+aov_h4<-aov(holiday~as.factor(atemp),data = test)
+#TukeyHSD(aov_h4,conf.level = 0.95)
+summary(aov_h4)
+##Holiday and humidity
+ggplot(train, aes(holiday,humidity,colour=holiday)) +  geom_bar(stat = "identity")
+aov_h5<-aov(holiday~as.factor(humidity),data = train)
+#TukeyHSD(aov_h5,conf.level = 0.95)
+summary(aov_h5)
+ggplot(test, aes(holiday,humidity,colour=holiday)) +  geom_bar(stat = "identity")
+aov_h6<-aov(holiday~as.factor(humidity),data = test)
+#TukeyHSD(aov_h6,conf.level = 0.95)
+summary(aov_h6)
+##Holiday and count
+ggplot(train, aes(holiday,count,colour=holiday)) +  geom_bar(stat = "identity")
+aov_h7<-aov(holiday~as.factor(count),data = train)
+#TukeyHSD(aov_h7,conf.level = 0.95)
+summary(aov_h7)
+
+##Workingday and temp
+ggplot(train, aes(workingday,temp,colour=workingday)) +  geom_bar(stat = "identity")
+aov_wh1<-aov(workingday~as.factor(temp),data = train)
+#TukeyHSD(aov_wh1,conf.level = 0.95)
+summary(aov_wh1)
+ggplot(test, aes(workingday,temp,colour=workingday)) +  geom_bar(stat = "identity")
+aov_wh2<-aov(workingday~as.factor(temp),data = test)
+#TukeyHSD(aov_wh2,conf.level = 0.95)
+summary(aov_wh2)
+##Workingday and atemp
+ggplot(train, aes(workingday,atemp,colour=workingday)) +  geom_bar(stat = "identity")
+aov_wh3<-aov(workingday~as.factor(atemp),data = train)
+#TukeyHSD(aov_wh3,conf.level = 0.95)
+summary(aov_wh3)
+ggplot(test, aes(workingday,atemp,colour=workingday)) +  geom_bar(stat = "identity")
+aov_wh4<-aov(workingday~as.factor(atemp),data = test)
+#TukeyHSD(aov_wh4,conf.level = 0.95)
+summary(aov_wh4)
+##Workingday and humidity
+ggplot(train, aes(workingday,humidity,colour=workingday)) +  geom_bar(stat = "identity")
+aov_wh5<-aov(workingday~as.factor(humidity),data = train)
+#TukeyHSD(aov_wh5,conf.level = 0.95)
+summary(aov_wh5)
+ggplot(test, aes(workingday,humidity,colour=workingday)) +  geom_bar(stat = "identity")
+aov_wh6<-aov(workingday~as.factor(humidity),data = test)
+#TukeyHSD(aov_wh6,conf.level = 0.95)
+summary(aov_wh6)
+##Workingday and count
+ggplot(train, aes(workingday,count,colour=workingday)) +  geom_bar(stat = "identity")
+aov_wh7<-aov(workingday~as.factor(count),data = train)
+#TukeyHSD(aov_wh7,conf.level = 0.95)
+summary(aov_wh7)
+
+##Weather and temp
+ggplot(train, aes(weather,temp,colour=weather)) +  geom_bar(stat = "identity")
+aov_w1<-aov(weather~as.factor(temp),data = train)
+#TukeyHSD(aov_w1,conf.level = 0.95)
+summary(aov_w1)
+ggplot(test, aes(weather,temp,colour=weather)) +  geom_bar(stat = "identity")
+aov_w2<-aov(weather~as.factor(temp),data = test)
+#TukeyHSD(aov_w2,conf.level = 0.95)
+summary(aov_w2)
+##Weather and atemp
+ggplot(train, aes(weather,atemp,colour=weather)) +  geom_bar(stat = "identity")
+aov_w3<-aov(weather~as.factor(atemp),data = train)
+#TukeyHSD(aov_w3,conf.level = 0.95)
+summary(aov_w3)
+ggplot(test, aes(weather,temp,colour=weather)) +  geom_bar(stat = "identity")
+aov_w4<-aov(weather~as.factor(atemp),data = test)
+#TukeyHSD(aov_w4,conf.level = 0.95)
+summary(aov_w4)
+##Weather and humidity
+ggplot(train, aes(weather,humidity,colour=weather)) +  geom_bar(stat = "identity")
+aov_w5<-aov(weather~as.factor(humidity),data = train)
+#TukeyHSD(aov_w5,conf.level = 0.95)
+summary(aov_w5)
+ggplot(test, aes(weather,humidity,colour=weather)) +  geom_bar(stat = "identity")
+aov_w6<-aov(weather~as.factor(humidity),data = test)
+#TukeyHSD(aov_w6,conf.level = 0.95)
+summary(aov_w6)
+##Weather and count
+ggplot(train, aes(weather,count,colour=weather)) +  geom_bar(stat = "identity")
+aov_w7<-aov(weather~as.factor(count),data = train)
+#TukeyHSD(aov_w7,conf.level = 0.95)
+summary(aov_w7)
+
+```
+
