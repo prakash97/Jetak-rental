@@ -1,0 +1,104 @@
+
+
+```{r cars}
+train<-read.csv("train.csv",sep = ',')
+test<-read.csv("test.csv",sep = ',')
+train_num<-train[,c("temp","atemp","humidity","windspeed")]
+test_num<-test[,c("temp","atemp","humidity","windspeed")]
+train.scaled <- scale(train_num, center = TRUE, scale = TRUE)
+test.scaled <- scale(test_num, center = TRUE, scale = TRUE)
+train<-cbind(train[,c("season","holiday","workingday","weather","count")],train.scaled)
+test<-cbind(test[,c("season","holiday","workingday","weather")],test.scaled)
+library(caret)
+library(Metrics)
+fit4 <- lm(formula = count~season+atemp+humidity+windspeed, data=train)
+summary(fit4)
+model_diag <- function(actual, pred) {
+  MSE = mse(actual,pred)
+  RMSE = rmse(actual,pred)
+  print(paste0('Mean squared error =',MSE,' , ', 'Root mean sq error =', RMSE))
+}
+test$pred4 <- predict(fit4, newdata = test )
+model_diag(train$count,fit4$fitted.values)
+train[which(cooks.distance(fit4) > 0.1),]
+plot(fit4)
+
+library(car)
+#check for linearity
+crPlots(fit4)
+#normality of residuals
+qqPlot(fit4)
+
+##check for homoscadicity
+#H0: there is no  heteroscadicity
+#H1: there is  heteroscadicity
+library(lmtest)
+bptest(fit4)##breush pagan test
+
+##check for multicollinearity
+## variable inflation factor
+
+vif(fit4)
+
+##Autocorrelation
+# H0: there exist no autocorrelation
+# H1:there exist autocorrelation
+durbinWatsonTest(fit4)
+
+##Decision Tree
+library("rpart")
+dtfit<-rpart(count~season+atemp+humidity+windspeed,data = train)
+dtfit$variable.importance
+summary(dtfit)
+dtfit
+printcp(dtfit)
+plotcp(dtfit)
+
+library(rattle)
+fancyRpartPlot(dtfit)
+
+# Visualizing Tree
+plot(dtfit,margin=0.1,uniform=TRUE, branch=0.6)
+#measuring prediction performance of tree model on train dataset
+library("caret")
+pred.dfit<-predict(dtfit,test)
+dr2<-1-(sum(train$count-dtfit$fitted.values)/sum((train$count-mean(train$count))))
+dtfit$cptable
+##Prune to avoid overfitting
+min(dtfit$cptable[,"xerror"]) # find minimum crossvalidation error of tree
+which.min(dtfit$cptable[,"xerror"])
+dtfit.cp = dtfit$cptable[5,"CP"]
+prune.tree = prune(dtfit, cp= dtfit.cp)
+# visualize prune tree
+plot(prune.tree, margin= 0.1,uniform=TRUE,branch=0.6)
+fancyRpartPlot(prune.tree)
+
+##Random forest
+library("randomForest")
+
+#fitting random forest classsifier to training dataset
+train.rf<-randomForest(count~season+atemp+humidity+windspeed,data = train,importance=T)
+train.rf
+pred.rf<-predict(train.rf,train)
+mse <- mean((train$count - pred.rf)^2)
+r2<-(sum(train$count-pred.rf)/sum((train$count-mean(train$count))))
+#list important variable
+importance(train.rf)
+
+#we can also plot variable importance plot
+varImpPlot(train.rf)
+##Bagging
+library(ipred)
+
+# fit model
+bfit <- bagging(count~season+atemp+humidity+windspeed, data=train, control=rpart.control(minsplit=5))
+# summarize the fit
+summary(bfit)
+# make predictions
+predictions <- predict(bfit, train)
+# summarize accuracy
+mse <- mean((train$count - predictions)^2)
+print(mse)
+
+```
+
